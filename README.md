@@ -1,6 +1,7 @@
 # 1. Mern User Management App
 
-This is a user management application built using React for the frontend. checkout on `https://mernusercrudclient.netlify.app/`
+This is a user management application built using React for the frontend. 
+Checkout on **https://mernusercrudclient.netlify.app/**
 
 ## 2. Features
 
