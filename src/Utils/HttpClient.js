@@ -63,7 +63,7 @@ const uploadSingleFile = async (url, formValues = {}) => {
   }
 };
 
-//upload multiple file method
+//upload multiple files method
 const uploadMultipleFile = async (url, formValues = []) => {
   try {
     const formData = new FormData();

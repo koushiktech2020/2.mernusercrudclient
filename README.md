@@ -1,4 +1,4 @@
-# 1. React User Management App
+# 1. Mern User Management App
 
 This is a user management application built using React for the frontend.
 

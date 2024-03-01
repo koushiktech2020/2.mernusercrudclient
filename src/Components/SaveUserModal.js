@@ -1,7 +1,7 @@
 /* eslint-disable */
 import React, { useState, useEffect } from "react"; // Importing React hooks
 
-import { getData, postData, putData, uploadSingleFile } from "Utils/HttpClient"; // Importing HTTP client utility functions
+import { getData, postData, putData, uploadSingleFile } from "Utils/HttpClient"; // Importing HTTP client utility gatweway functions
 import { base_url } from "Helper/UrlHelper/UrlHelper"; // Importing base URL for API requests
 import {
   add_new_user,
