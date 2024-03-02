@@ -46,7 +46,7 @@ const Home = () => {
     getUserList();
   }, []);
 
-  if (!isLoading) {
+  if (isLoading) {
     return (
       <div className="container">
         <div className="container text-center">
