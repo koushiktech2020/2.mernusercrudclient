@@ -31,6 +31,8 @@ const SaveUserModal = ({
   const [phoneError, setPhoneError] = useState("");
   const [uploadError, setUploadError] = useState("");
 
+  const [isSaving, setIsSaving] = useState(false);
+
   // Function to handle input field changes
   const onInputChangeHandler = (e) => {
     const { name, value } = e.target;
@@ -161,6 +163,7 @@ const SaveUserModal = ({
   // Function to save user data
   const saveUserHandler = async (e) => {
     if (validateInputs()) {
+      setIsSaving(true);
       try {
         const userData = {
           name,
@@ -185,6 +188,7 @@ const SaveUserModal = ({
           response = await postData(endPoint, userData); // POST request to add new user
         }
 
+        setIsSaving(false);
         resetAll(); // Reset all state variables
 
         if (response.status) {
@@ -391,7 +395,15 @@ const SaveUserModal = ({
               className="btn btn-primary"
               onClick={saveUserHandler}
             >
-              Save changes
+              Save
+              {isSaving && (
+                <div
+                  className="ms-2 spinner-border spinner-border-sm text-light"
+                  role="status"
+                >
+                  <span className="visually-hidden">Loading...</span>
+                </div>
+              )}
             </button>
           </div>
         </div>
