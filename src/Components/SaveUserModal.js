@@ -21,11 +21,105 @@ const SaveUserModal = ({
   const [address, setAddress] = useState(""); // State variable for user address
   const [role, setRole] = useState(""); // State variable for user role
   const [phone, setPhone] = useState(""); // State variable for user phone
-  const [photoPublicUrl, setPhotoPublicUrl] = useState(""); // State variable for public URL of user photo
-  const [photoPublicId, setPhotoPublicId] = useState(""); // State variable for public ID of user photo
+  const [uploadedImageUrl, setUploadedImageUrl] = useState(""); // State variable for public URL of user photo
+  const [uploadedImageId, setUploadedImageId] = useState(null); // State variable for public ID of user photo
+
+  const [nameError, setNameError] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [addressError, setAddressError] = useState("");
+  const [roleError, setRoleError] = useState("");
+  const [phoneError, setPhoneError] = useState("");
+  const [uploadError, setUploadError] = useState("");
+
+  // Function to handle input field changes
+  const onInputChangeHandler = (e) => {
+    const { name, value } = e.target;
+
+    // Switch case to determine which input field triggered the change
+    switch (name) {
+      case "name":
+        setName(value); // Update name state
+        setNameError(""); // Clear name error
+        break;
+      case "email":
+        setEmail(value); // Update email state
+        setEmailError(""); // Clear email error
+        break;
+      case "address":
+        setAddress(value); // Update address state
+        setAddressError(""); // Clear address error
+        break;
+      case "role":
+        setRole(value); // Update role state
+        setRoleError(""); // Clear role error
+        break;
+      case "phone":
+        setPhone(value); // Update phone state
+        setPhoneError(""); // Clear phone error
+        break;
+      default:
+        break;
+    }
+  };
+
+  // Function to validate input fields
+  const validateInputs = () => {
+    let isValid = true;
+
+    // Validate name
+    if (!name.trim()) {
+      setNameError("* Name is required");
+      isValid = false;
+    } else {
+      setNameError("");
+    }
+
+    // Validate email
+    if (!email.trim()) {
+      setEmailError("* Email is required");
+      isValid = false;
+    } else {
+      setEmailError("");
+    }
+
+    // Validate address
+    if (!address.trim()) {
+      setAddressError("* Address is required");
+      isValid = false;
+    } else {
+      setAddressError("");
+    }
+
+    // Validate role
+    if (!role.trim()) {
+      setRoleError("* Role is required");
+      isValid = false;
+    } else {
+      setRoleError("");
+    }
+
+    // Validate phone
+    if (!phone.trim()) {
+      setPhoneError("* Phone is required");
+      isValid = false;
+    } else {
+      setPhoneError("");
+    }
+
+    // Validate uploaded image
+    if (!uploadedImageId) {
+      setUploadError("* Image is required");
+      isValid = false;
+    } else {
+      setUploadError("");
+    }
+
+    return isValid;
+  };
 
   // Function to handle photo upload
   const photoUploader = async (e) => {
+    setUploadError("");
     const file = e.target.files[0]; // Get the selected file
     try {
       let endPoint = `${base_url}${single_upload}`; // API endpoint for single file upload
@@ -33,8 +127,8 @@ const SaveUserModal = ({
       const response = await uploadSingleFile(endPoint, file); // Upload file
 
       if (response.status) {
-        setPhotoPublicUrl(response.data.photopublicurl); // Set public URL of photo
-        setPhotoPublicId(response.data.photopublicid); // Set public ID of photo
+        setUploadedImageUrl(response.data.publicurl); // Set public URL of photo
+        setUploadedImageId(response.data._id); // Set public ID of photo
         resetProfileImageFile(); // Reset file input
       }
     } catch (error) {
@@ -56,8 +150,8 @@ const SaveUserModal = ({
         setAddress(response.data.role);
         setRole(response.data.address);
         setPhone(response.data.phone);
-        setPhotoPublicId(response.data.photopublicid);
-        setPhotoPublicUrl(response.data.photopublicurl);
+        setUploadedImageId(response.data.uploadedimage?._id ?? null);
+        setUploadedImageUrl(response.data.uploadedimage?.publicurl ?? "");
       }
     } catch (error) {
       console.log(error.message); // Log error message
@@ -66,43 +160,44 @@ const SaveUserModal = ({
 
   // Function to save user data
   const saveUserHandler = async (e) => {
-    try {
-      const userData = {
-        name,
-        email,
-        address,
-        role,
-        phone,
-        photopublicid: photoPublicId,
-        photopublicurl: photoPublicUrl,
-      };
+    if (validateInputs()) {
+      try {
+        const userData = {
+          name,
+          email,
+          address,
+          role,
+          phone,
+          uploadedimage: uploadedImageId || null,
+        };
 
-      let endPoint = `${base_url}`; // Base API endpoint
+        let endPoint = `${base_url}`; // Base API endpoint
 
-      let response = {}; // Response object
+        let response = {}; // Response object
 
-      if (selectedUserId) {
-        // If selected user ID exists, update user data
-        endPoint += `${update_user}/${selectedUserId}`; // API endpoint for updating user
-        response = await putData(endPoint, userData); // PUT request to update user data
-      } else {
-        // If selected user ID doesn't exist, add new user
-        endPoint += `${add_new_user}`; // API endpoint for adding new user
-        response = await postData(endPoint, userData); // POST request to add new user
+        if (selectedUserId) {
+          // If selected user ID exists, update user data
+          endPoint += `${update_user}/${selectedUserId}`; // API endpoint for updating user
+          response = await putData(endPoint, userData); // PUT request to update user data
+        } else {
+          // If selected user ID doesn't exist, add new user
+          endPoint += `${add_new_user}`; // API endpoint for adding new user
+          response = await postData(endPoint, userData); // POST request to add new user
+        }
+
+        resetAll(); // Reset all state variables
+
+        if (response.status) {
+          // If request is successful, close modal and refresh user list
+          let modal = bootstrap.Modal.getInstance(
+            document.querySelector("#saveUserModal")
+          );
+          modal.hide(); // Hide modal
+          afterModalClose(); // Call function to handle modal close
+        }
+      } catch (error) {
+        console.log(error); // Log error message
       }
-
-      resetAll(); // Reset all state variables
-
-      if (response.status) {
-        // If request is successful, close modal and refresh user list
-        let modal = bootstrap.Modal.getInstance(
-          document.querySelector("#saveUserModal")
-        );
-        modal.hide(); // Hide modal
-        afterModalClose(); // Call function to handle modal close
-      }
-    } catch (error) {
-      console.log(error); // Log error message
     }
   };
 
@@ -123,9 +218,15 @@ const SaveUserModal = ({
     setAddress(""); // Reset user address
     setPhone(""); // Reset user phone
     setRole(""); // Reset user role
-    setPhotoPublicUrl(""); // Reset public URL of user photo
-    setPhotoPublicId(""); // Reset public ID of user photo
+    setUploadedImageUrl(""); // Reset public URL of user photo
+    setUploadedImageId(null); // Reset public ID of user photo
     setSelectedUserId(null); // Reset selected user ID
+    setNameError("");
+    setEmailError("");
+    setAddressError("");
+    setRoleError("");
+    setPhoneError("");
+    setUploadError("");
   };
 
   // Fetch user details on component mount if selected user ID exists
@@ -173,9 +274,11 @@ const SaveUserModal = ({
                   className="form-control"
                   id="exampleFormControlInput1"
                   placeholder="name"
+                  name="name"
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={onInputChangeHandler}
                 />
+                <div className="text-danger">{nameError}</div>
               </div>
               <div className="mb-3">
                 <label
@@ -189,9 +292,11 @@ const SaveUserModal = ({
                   className="form-control"
                   id="exampleFormControlInput1"
                   placeholder="user@email.com"
+                  name="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={onInputChangeHandler}
                 />
+                <div className="text-danger">{emailError}</div>
               </div>
               <div className="mb-3">
                 <label
@@ -203,9 +308,11 @@ const SaveUserModal = ({
                 <input
                   type="text"
                   className="form-control"
+                  name="address"
                   value={address}
-                  onChange={(e) => setAddress(e.target.value)}
+                  onChange={onInputChangeHandler}
                 />
+                <div className="text-danger">{addressError}</div>
               </div>
               <div className="mb-3">
                 <label
@@ -217,9 +324,11 @@ const SaveUserModal = ({
                 <input
                   type="text"
                   className="form-control"
+                  name="role"
                   value={role}
-                  onChange={(e) => setRole(e.target.value)}
+                  onChange={onInputChangeHandler}
                 />
+                <div className="text-danger">{roleError}</div>
               </div>
               <div className="mb-3">
                 <label
@@ -231,9 +340,11 @@ const SaveUserModal = ({
                 <input
                   type="email"
                   className="form-control"
+                  name="phone"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={onInputChangeHandler}
                 />
+                <div className="text-danger">{phoneError}</div>
               </div>
               <div className="row ">
                 <div className="col-lg-10">
@@ -255,13 +366,14 @@ const SaveUserModal = ({
                 <div className="col-lg-2">
                   <div className="mb-3">
                     <img
-                      src={photoPublicUrl}
+                      src={uploadedImageUrl}
                       alt="img"
                       className="rounded img-thumbnail"
                       height={35}
                     />
                   </div>
                 </div>
+                <div className="text-danger">{uploadError}</div>
               </div>
             </div>
           </div>
@@ -270,6 +382,7 @@ const SaveUserModal = ({
               type="button"
               className="btn btn-secondary"
               data-bs-dismiss="modal"
+              onClick={resetAll}
             >
               Close
             </button>

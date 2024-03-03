@@ -109,7 +109,7 @@ const Home = () => {
                       <div className="d-flex align-items-center justify-content-between gap-2">
                         <p className="mb-0">{user.name}</p>
                         <img
-                          src={user.photopublicurl}
+                          src={user.uploadedimage?.publicurl ?? ""}
                           alt="img"
                           height={25}
                           width={25}
